@@ -1,0 +1,139 @@
+// =============================================================================
+// CodSpoke — Database Schema (Prisma)
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// User
+// ---------------------------------------------------------------------------
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  passwordHash  String
+  emailVerified Boolean  @default(false)
+  verifyToken   String?  // email verification token
+  verifySentAt  DateTime? // when verification was sent
+  trialEndsAt   DateTime? // when 24h trial ends (NULL = no trial or expired)
+  plan          Plan     @default(NONE)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  projects  Project[]
+  sessions  Session[]
+  messages  Message[]
+  payments  Payment[]
+
+  @@index([email])
+  @@map("users")
+}
+
+enum Plan {
+  NONE
+  LITE
+  PRO
+  PREMIUM
+}
+
+// ---------------------------------------------------------------------------
+// Session (JWT refresh / session management)
+// ---------------------------------------------------------------------------
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique // hashed refresh token
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("sessions")
+}
+
+// ---------------------------------------------------------------------------
+// Project
+// ---------------------------------------------------------------------------
+model Project {
+  id          String   @id @default(uuid())
+  userId      String
+  title       String   @default("")
+  description String   @default("") // original user prompt
+  status      ProjectStatus @default(PENDING)
+  deployUrl   String?  // live link (e.g. https://bakeshop.codespoke.tech)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@index([userId])
+  @@map("projects")
+}
+
+enum ProjectStatus {
+  PENDING
+  BUILDING
+  DEPLOYED
+  FAILED
+}
+
+// ---------------------------------------------------------------------------
+// Chat Message
+// ---------------------------------------------------------------------------
+model Message {
+  id        String   @id @default(uuid())
+  projectId String
+  userId    String
+  role      MessageRole
+  content   String
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
+  @@map("messages")
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+}
+
+// ---------------------------------------------------------------------------
+// Payment
+// ---------------------------------------------------------------------------
+model Payment {
+  id            String         @id @default(uuid())
+  userId        String
+  edsofaId      String?        @unique // Edsofa transaction ID
+  amount        Decimal        @db.Decimal(10, 2)
+  currency      String         @default("USD")
+  status        PaymentStatus  @default(PENDING)
+  plan          Plan
+  createdAt     DateTime       @default(now())
+  paidAt        DateTime?
+  subscriptionEndsAt DateTime? // when current paid period ends
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([edsofaId])
+  @@map("payments")
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
