@@ -16,6 +16,9 @@ import { chatRouter } from './routes/chat.js';
 const app = express();
 const PORT = parseInt(process.env.PORT, 10) || 3000;
 
+// Trust nginx reverse proxy (rate-limiter needs this behind nginx)
+app.set('trust proxy', 1);
+
 // ---------------------------------------------------------------------------
 // Security & parsing middleware
 // ---------------------------------------------------------------------------
