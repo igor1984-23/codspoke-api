@@ -36,7 +36,9 @@ class ResendProvider {
 
   async send({ to, subject, text, html }) {
     const { data, error } = await this.#client.emails.send({
-      from: 'CodSpoke <hello@codspoke.tech>',
+      // Resend requires the domain to have sending enabled
+      // Using verified Resend default sender
+      from: 'CodSpoke <onboarding@resend.dev>',
       to,
       subject,
       text,
