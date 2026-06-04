@@ -3,15 +3,15 @@
 // =============================================================================
 
 import { config } from '../utils/config.js';
+import { Resend } from 'resend';
 
 /** @type {EmailProvider} */
 let provider;
 
-async function getProvider() {
+function getProvider() {
   if (provider) return provider;
 
   if (config.RESEND_API_KEY) {
-    const { Resend } = await import('resend');
     provider = new ResendProvider(new Resend(config.RESEND_API_KEY));
   } else {
     console.warn('[email] No RESEND_API_KEY — using console logger');
@@ -55,7 +55,7 @@ class ResendProvider {
 
 export async function sendVerificationEmail({ to, token }) {
   const link = `${config.FRONTEND_URL}/verify?token=${token}`;
-  const prov = await getProvider();
+  const prov = getProvider();
 
   return prov.send({
     to,
@@ -67,7 +67,7 @@ export async function sendVerificationEmail({ to, token }) {
 
 export async function sendPasswordResetEmail({ to, token }) {
   const link = `${config.FRONTEND_URL}/reset-password?token=${token}`;
-  const prov = await getProvider();
+  const prov = getProvider();
 
   return prov.send({
     to,
@@ -78,7 +78,7 @@ export async function sendPasswordResetEmail({ to, token }) {
 }
 
 export async function sendTrialEndingEmail({ to }) {
-  const prov = await getProvider();
+  const prov = getProvider();
   return prov.send({
     to,
     subject: 'Your CodSpoke trial ends soon',
