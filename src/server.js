@@ -38,6 +38,7 @@ const globalLimiter = rateLimit({
   max: 120,                // 120 req/min per IP
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   message: { error: 'too_many_requests', detail: 'Slow down, cowboy.' },
 });
 app.use(globalLimiter);
