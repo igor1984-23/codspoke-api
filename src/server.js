@@ -31,17 +31,17 @@ app.use(cors({
 app.use(express.json({ limit: '64kb' }));
 
 // ---------------------------------------------------------------------------
-// Global rate‑limiter (soft per‑IP)
+// Global rate‑limiter (soft per‑IP) — temporarily disabled due to nginx/IP issues
 // ---------------------------------------------------------------------------
-const globalLimiter = rateLimit({
-  windowMs: 60_000,        // 1 minute
-  max: 120,                // 120 req/min per IP
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: { xForwardedForHeader: false },
-  message: { error: 'too_many_requests', detail: 'Slow down, cowboy.' },
-});
-app.use(globalLimiter);
+// const globalLimiter = rateLimit({
+//   windowMs: 60_000,        // 1 minute
+//   max: 120,                // 120 req/min per IP
+//   standardHeaders: true,
+//   legacyHeaders: false,
+//   validate: { xForwardedForHeader: false },
+//   message: { error: 'too_many_requests', detail: 'Slow down, cowboy.' },
+// });
+// app.use(globalLimiter);
 
 // ---------------------------------------------------------------------------
 // Routes
