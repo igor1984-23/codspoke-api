@@ -52,7 +52,7 @@ class ResendProvider {
 // ---------------------------------------------------------------------------
 
 export async function sendVerificationEmail({ to, token }) {
-  const link = `${config.CORS_ORIGIN || 'https://codespoke.tech'}/verify?token=${token}`;
+  const link = `${config.FRONTEND_URL}/verify?token=${token}`;
   const prov = await getProvider();
 
   return prov.send({
@@ -64,7 +64,7 @@ export async function sendVerificationEmail({ to, token }) {
 }
 
 export async function sendPasswordResetEmail({ to, token }) {
-  const link = `${config.CORS_ORIGIN || 'https://codespoke.tech'}/reset-password?token=${token}`;
+  const link = `${config.FRONTEND_URL}/reset-password?token=${token}`;
   const prov = await getProvider();
 
   return prov.send({
